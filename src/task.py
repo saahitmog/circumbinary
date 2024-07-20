@@ -53,14 +53,15 @@ async def main(N: int=100_000, eta: float=4.5, sigma_di: float=1,
                 'speed up': ar.serial_time/ar.wall_time}
 
     dir_name = 'data'
-    if not os.path.exists(dir_name): os.makedirs(dir_name)
+    if not os.path.exists(dir_name): 
+        os.makedirs(dir_name)
     e, d, a, m, i = (str(eta).replace('.', ''), str(sigma_di).replace('.', ''), 
                      str(alpha).replace('.', ''), str(mode), 0)
     file = f'{dir_name}/e{e}_d{d}_a{a}_m{m}_{i}.h5'
-    _cutoff = len(f'{dir_name}/e{e}_d{d}_a{a}_m{m}_')
+    name_len = len(f'{dir_name}/e{e}_d{d}_a{a}_m{m}_')
     while os.path.exists(file):
         i += 1
-        file = file[:_cutoff]+f'{i}.h5'
+        file = file[:name_len]+f'{i}.h5'
         
     transit = 0
     if df is not None:
@@ -82,7 +83,7 @@ if __name__ == '__main__':
     import numpy as np
     import pandas as pd
     import ipyparallel as ipp
-    from functions import wrapper
+    from src.functions import wrapper
 
     inp = sys.argv[1:]
 
