@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import shapely as sh
 from rebound import Simulation
 from scipy.integrate import solve_ivp
@@ -224,6 +225,16 @@ def sample_check(eta, sigma_di, alpha, mode):
 
     a_b_circ = p2a(P_b_circ, M_A)
 
+    if mode == 3: # sample windemuth for binary parameters
+        windemuth = pd.read_csv('../data/windemuth.posteriors', sep=' ', header=1)
+        idx = rng.choice(np.arange(0, len(windemuth)))
+        ecosw = abs(windemuth['ecosw'].iloc[idx])
+        cosw = rng.uniform(0, np.arccos(ecosw))
+        e_b = ecosw / cosw
+        P_b = windemuth['P(d)'].iloc[idx]
+        a_b = p2a(P_b, M_A)
+        a_b_circ, e_b_circ, P_b_circ = a_b, e_b, P_b
+
     roche_limit = 0.44*q**-0.33/(1+1/q)**0.2
     pericenter = a_b_circ*(1-e_b_circ)
 
@@ -242,7 +253,7 @@ def sample_check(eta, sigma_di, alpha, mode):
         a_HW = HW99(mu, e_b_circ, a_b_circ)
         P_HW = a2p(a_HW, M_A+M_B)
     if mode == 2: # no circularization
-        a_b_circ, e_b_circ, P_b_circ = a_b, e_b, P_b
+        a_b_circ, e_b_circ, P_b_circ = a_b, e_b, P_b      
 
     # Sample Planet Parameters
     P_min, P_max = P_HW, 100*P_HW
@@ -254,17 +265,16 @@ def sample_check(eta, sigma_di, alpha, mode):
     a_p = p2a(P_p, M_A+M_B)
     e_p = 0
 
-    # UPPER_ANGLE = 30
-    # arg = np.sin(np.deg2rad(UPPER_ANGLE))
-    i_b = np.pi/2 - np.arcsin(rng.uniform(0, 0.5))
+    i_b = np.pi/2 + np.arcsin(rng.uniform(-0.5, 0.5))
     omega_b = rng.uniform(0, 2*np.pi)
     Omega_b = rng.uniform(0, 2*np.pi)
     omega_p = rng.uniform(0, 2*np.pi)
     Omega_p = rng.uniform(0, 2*np.pi)
-    di = rng.rayleigh(np.deg2rad(sigma_di))
-    i_p = i_b+di
+    i_m = rng.rayleigh(np.deg2rad(sigma_di))
+    # if mode == 4: i_m = rng.uniform(0, np.deg2rad(15))
+    i_p = i_b+i_m
     i_p_sky, Omega_p_sky, omega_p_sky = sky_transform(i_b, Omega_b, omega_b,
-                                                      di, Omega_p, omega_p)
+                                                      i_m, Omega_p, omega_p)
 
     # Simulate Orbit
     sim = init(M_A, M_B, a_b_circ, a_p, inc_bin=i_b, inc_p=i_p,

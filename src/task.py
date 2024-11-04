@@ -83,7 +83,7 @@ if __name__ == '__main__':
     import numpy as np
     import pandas as pd
     import ipyparallel as ipp
-    from src.functions import wrapper
+    from functions import wrapper
 
     inp = sys.argv[1:]
 
