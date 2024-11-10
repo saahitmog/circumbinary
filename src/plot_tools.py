@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from rebound import Simulation
 from matplotlib import pyplot as plt
+from matplotlib import patches as pth
 from multiprocessing.pool import Pool
 from scipy.integrate import solve_ivp
 from src.functions import p2a, a2p, R_sun, HW99
@@ -11,16 +12,16 @@ color_A = '#005AB5'
 color_B = '#DC3220'
 color_C = '#FFB000'
 
-def init(M_A: float, M_B: float, a_bin: float, a_p: float, 
-         inc_bin: float, inc_p: float, Omega_bin: float = 0,
-         Omega_p: float = 0, e_B: float = 0, e_p: float = 0,
-         omega: float = 0) -> Simulation:
+def init(M_A: float, M_B: float, a_b: float, a_p: float, 
+         inc_b: float, inc_p: float, Omega_b: float = 0,
+         Omega_p: float = 0, e_b: float = 0, e_p: float = 0,
+         omega_p: float = 0, omega_b: float = 0) -> Simulation:
 
     sim = Simulation()
     sim.add(m=M_A)
-    sim.add(m=M_B, a=a_bin, inc=inc_bin, 
-            Omega=Omega_bin, e=e_B, omega=omega)
-    sim.add(a=a_p, inc=inc_p, Omega=Omega_p, e=e_p)
+    sim.add(m=M_B, a=a_b, inc=inc_b, 
+            Omega=Omega_b, e=e_b, omega=omega_b)
+    sim.add(a=a_p, inc=inc_p, Omega=Omega_p, e=e_p, omega=omega_p)
     sim.move_to_com()
     sim.ri_ias15.min_dt = 1e-3
     
@@ -47,15 +48,17 @@ def integrate(sim: Simulation, P: float = None,
     sim = None
     return x, y, z
 
-def plot_system(M_A: float, M_B: float, a: float, r_a: float, 
-                inc: float, Omega_p: float = 0, Omega_b: float = 0, e: float = 0, 
-                omega: float = 0, N: float = None, dinc: float = 0, 
-                fancy: bool = False, xlim: float = 0.5,  
-                ylim: float = 0.5, offset: int = None, title: str = None) ->  None:
+def plot_system(M_A: float, M_B: float, a_b: float, r_a: float, 
+                inc_b: float, Omega_p: float = 0, Omega_b: float = 0, 
+                e_b: float = 0, omega_p: float = 0, omega_b: float = 0, 
+                N: float = None, dinc: float = 0, fancy: bool = False, 
+                xlim: float = 0.5, ylim: float = 0.5, offset: int = None, 
+                title: str = None, scaled: bool = True) ->  None:
   
-    sim = init(M_A, M_B, a, r_a*a, np.deg2rad(inc), 
-               np.deg2rad(inc+dinc), np.deg2rad(Omega_b),
-               np.deg2rad(Omega_p), e, omega=np.deg2rad(omega))
+    sim = init(M_A=M_A, M_B=M_B, a_b=a_b, a_p=r_a*a_b, e_b=e_b, 
+               inc_b=np.deg2rad(inc_b), inc_p=np.deg2rad(inc_b+dinc), 
+               Omega_b=np.deg2rad(Omega_b), Omega_p=np.deg2rad(Omega_p), 
+               omega_p=np.deg2rad(omega_p), omega_b=np.deg2rad(omega_b))
     x, y, z = integrate(sim, N=N)
     
     if not fancy:
@@ -95,16 +98,16 @@ def plot_system(M_A: float, M_B: float, a: float, r_a: float,
         ax.add_artist( A )
         ax.add_artist( B )
         
-        ax.axis('scaled')
         ax.set_xlim(-xlim, xlim)
         ax.set_ylim(-ylim, ylim)
         ax.legend(loc='upper left', fontsize='small')
 
     ax.grid(True)
-    if title is None: title = "View of the System along the z-axis"
+    if scaled: ax.axis('scaled')
+    if title is None: title = "View of the System along the y-axis"
     ax.set_title(title)
     ax.set_xlabel("x [AU]", fontsize='large')
-    ax.set_ylabel("y [AU]", fontsize='large')
+    ax.set_ylabel("z [AU]", fontsize='large')
     plt.show()
 
 def fOmega(e):
@@ -296,14 +299,49 @@ def ecosw_err(e, w, e_err, w_err):
     x2 = np.deg2rad(w_err) * e*np.sin(np.deg2rad(w))
     return np.hypot(x1, x2)
 
+def add_arrow(line, position=None, direction='right', size=14, color=None):
+    """
+    add an arrow to a line.
+
+    line:       Line2D object
+    position:   x-position of the arrow. If None, mean of xdata is taken
+    direction:  'left' or 'right'
+    size:       size of the arrow in fontsize points
+    color:      if None, line color is taken.
+    """
+    if color is None:
+        color = line.get_color()
+
+    xdata = line.get_xdata()
+    ydata = line.get_ydata()
+
+    if position is None:
+        position = xdata.mean()
+
+    start_ind = np.argmin(np.absolute(xdata - position))
+    if direction == 'right':
+        end_ind = start_ind + 1
+    else:
+        end_ind = start_ind - 1
+
+    try:
+        line.axes.annotate('',
+            xytext=(xdata[start_ind], ydata[start_ind]),
+            xy=(xdata[end_ind], ydata[end_ind]),
+            arrowprops=dict(arrowstyle="-|>", color=color, lw=0),
+            size=size
+        )
+    except:
+        pass
+
 windemuth = pd.read_csv('data/windemuth.posteriors', sep=' ', header=1)
 
 files_control = ('data/e45_d10_a05_m3_0.h5', 
                  'data/e45_d10_a05_m1_0.h5',
                  'data/e45_d10_a05_m0_0.h5')
 hist_titles_control = ('Control Case',
-                       'Planets Form after\nDecay', 
-                       'Planets Form before\nDecay')
+                       'Planets Form\nAfter Decay', 
+                       'Planets Form\nBefore Decay')
 
 files_eta = ('data/e20_d10_a05_m0_0.h5', 
              'data/e45_d10_a05_m0_0.h5',

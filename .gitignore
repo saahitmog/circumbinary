@@ -2,3 +2,4 @@ __pycache__/
 archive/
 notes.ipynb
 src/data
+run.sh
