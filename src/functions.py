@@ -70,7 +70,7 @@ def consecutive_masked_runs(arr, mask):
                     if mask[transitions[i]]]
     return masked_runs
 
-def tidal_circ(t, orb, mu, eta):
+def tidal_circ(t, orb, mu, eta, Penv):
     def fN(e):
         return (1+15/2*e**2+45/8*e**4+5/16*e**6)/(1-e**2)**6
     def fOmega(e):
@@ -88,7 +88,7 @@ def tidal_circ(t, orb, mu, eta):
         return 4/11*(fN(e)**2/fOmega(e)-fN_a(e))   
 
     e, P = orb
-    tc = 0.3*(P/4.)**eta
+    tc = 0.3*(P/Penv)**eta
     dedt = e*mu*(1.+mu)/tc*F_e(e)
     dPdt = 1.5*P*mu*(1.+mu)/tc*F_a(e)
     return [dedt, dPdt]
@@ -130,7 +130,7 @@ def init(M_A: float, M_B: float, a_bin: float, a_p: float,
     sim.add(m=M_B, a=a_bin, inc=inc_bin, Omega=Omega_bin, e=e_B, omega=omega_b)
     sim.add(a=a_p, inc=inc_p, Omega=Omega_p, e=e_p, omega=omega_p)
     sim.move_to_com()
-    sim.ri_ias15.min_dt = 1e-8
+    # sim.ri_ias15.min_dt = 1e-8
     return sim
 
 def integrate(sim: Simulation, P: float) -> tuple[np.array]:
@@ -201,7 +201,7 @@ def check_transit(R_A: float, R_B: float, R_p: float,
 
     return max(results, default=0)
 
-def sample_check(eta, sigma_di, alpha, mode):
+def sample_check(eta, sigma_di, alpha, Penv, mode):
 
     rng = np.random.default_rng()
 
@@ -210,7 +210,7 @@ def sample_check(eta, sigma_di, alpha, mode):
     M_A, M_B, M_p = 1, q, 0
     R_A, R_B, R_p = R_sun, R_sun*q**0.8, 0
 
-    P_min, P_max = 3, 200
+    P_min, P_max = Penv*4/3, 200
     l = rng.triangular(0, 1, 1)
     P_b = P_max**l*P_min**(1-l)
     e_b = rng.beta(1.75, 2.01)
@@ -219,7 +219,7 @@ def sample_check(eta, sigma_di, alpha, mode):
     # Tidally Circularize
     t_age = rng.uniform(1, 10)
     sol = solve_ivp(tidal_circ, (0, t_age), (e_b, P_b), t_eval=[t_age], 
-                    args=(q, eta), method='LSODA')
+                    args=(q, eta, Penv), method='LSODA')
     e_b_circ, P_b_circ = sol.y.flatten()
     e_b_circ = abs(e_b_circ)
 
@@ -265,7 +265,7 @@ def sample_check(eta, sigma_di, alpha, mode):
     a_p = p2a(P_p, M_A+M_B)
     e_p = 0
 
-    i_b = np.pi/2 + np.arcsin(rng.uniform(-0.5, 0.5))
+    i_b = np.pi/2 + np.arcsin(rng.uniform(0, 0.5))
     omega_b = rng.uniform(0, 2*np.pi)
     Omega_b = rng.uniform(0, 2*np.pi)
     omega_p = rng.uniform(0, 2*np.pi)
@@ -314,7 +314,7 @@ def sample_check(eta, sigma_di, alpha, mode):
 
 def wrapper(params: list):
 
-    if len(params) != 4:
+    if len(params) != 5:
         print("Bad Parameters")
         return
    

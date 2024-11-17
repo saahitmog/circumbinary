@@ -23,7 +23,7 @@ def init(M_A: float, M_B: float, a_b: float, a_p: float,
             Omega=Omega_b, e=e_b, omega=omega_b)
     sim.add(a=a_p, inc=inc_p, Omega=Omega_p, e=e_p, omega=omega_p)
     sim.move_to_com()
-    sim.ri_ias15.min_dt = 1e-3
+    # sim.ri_ias15.min_dt = 1e-3
     
     return sim
 
@@ -131,19 +131,23 @@ def F_e(e):
 def F_a(e):
     return 4/11*(fN(e)**2/fOmega(e)-fN_a(e))
 
-def tidal_circ(t, orb, mu, eta):
+def tidal_circ(t, orb, mu, eta, Penv=4):
 	e, P = orb
-	tc = 0.3*(P/6.)**eta
+	tc = 0.3*(P/Penv)**eta
 	dedt = e*mu*(1.+mu)/tc*F_e(e)
 	dPdt = 1.5*P*mu*(1.+mu)/tc*F_a(e)
-	return [dedt,dPdt]
+	return [dedt, dPdt]
 
-def solve_circularization(inp):
-    e, P, mu, eta = inp
-    t_age = np.random.default_rng().uniform(1, 10)
-    sol = solve_ivp(tidal_circ, (0, t_age), (e, P), t_eval=[t_age], 
-                    args=(mu, eta), method='LSODA')
-    return sol.y.flatten()
+def solve_circularization(inp, n_eval=1, t_age=None):
+    e, P, mu, eta, Penv = inp
+    if t_age is None: t_age = np.random.default_rng().uniform(1, 10)
+    if n_eval == 1: t_eval = [t_age]
+    else: t_eval = np.linspace(0, t_age, n_eval)
+    sol = solve_ivp(tidal_circ, t_span=(0, t_age), 
+                    y0=(e, P), t_eval=t_eval, 
+                    args=(mu, eta, Penv), method='LSODA')
+    if n_eval == 1: return sol.y.flatten()
+    else: return sol.y
 
 def roche_limit(mu, e, P):
     return 0.44*mu**-0.33/(1+1/mu)**0.2 * p2a(P, 1)*(1-e)
@@ -170,17 +174,18 @@ def read_df(fname, key: str='data'):
     with pd.HDFStore(fname) as hdf:
         return hdf[key]
 
-def system_pop(n_pop: int, eta: float=4.5):
+def system_pop(n_pop: int, eta: float=4.5, Penv: float=4, Pmin: float=3):
     rng = np.random.default_rng()
     e = rng.beta(1.75, 2.01, n_pop)
 
-    P_min, P_max = 3, 200
+    P_min, P_max = Pmin, 200
     l = rng.triangular(0, 1, 1, n_pop)
     P = P_max**l*P_min**(1-l)
 
     mu = rng.triangular(0, 1, 1, n_pop)
     eta = np.full_like(e, eta)
-    inp = np.array((e, P, mu, eta)).T
+    Penv = np.full_like(e, Penv)
+    inp = np.array((e, P, mu, eta, Penv)).T
 
     with Pool() as pool:
         e_circ, P_circ = np.array(pool.map(solve_circularization, inp)).T
@@ -360,6 +365,19 @@ files_sigma = ('data/e45_d03_a05_m0_0.h5',
               'data/e45_d30_a05_m0_0.h5')
 hist_titles_sigma = (r'$\sigma_m=0.3$', r'$\sigma_m=1.0$', 
                      r'$\sigma_m=3.0$')
+
+files_penv = ('data/e45_d10_a05_m0_0.h5',
+              'data/e45_d10_a05_p50_m0_0.h5',
+              'data/e45_d10_a05_p60_m0_0.h5',
+              # 'data/e45_d10_a05_p80_m0_0.h5',
+              # 'data/e45_d10_a05_p120_m0_0.h5'
+              )
+hist_titles_penv = (r'$(P_{\rm env}, P_{\rm min})=(4.0, 3.0)$ days',
+                    r'$(P_{\rm env}, P_{\rm min})=(5.0, 3.75)$ days',
+                    r'$(P_{\rm env}, P_{\rm min})=(6.0, 4.5)$ days',
+                    # r'$(P_{\rm env}, P_{\rm min})=(8.0, 6.0)$ days', 
+                    # r'$(P_{\rm env}, P_{\rm min})=(12.0, 9.0)$ days'
+                    )
 
 all_dfs = [[df for df in [read_df(file) for file in files]] 
             for files in [files_eta, files_sigma, files_alpha]]

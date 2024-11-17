@@ -3,3 +3,5 @@ archive/
 notes.ipynb
 src/data
 run.sh
+run_large_model_local.sh
+windemuth.posteriors

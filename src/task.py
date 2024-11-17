@@ -1,16 +1,17 @@
 async def main(N: int=100_000, eta: float=4.5, sigma_di: float=1,   
-               alpha: float=0, mode: int=0):
+               alpha: float=0, Penv: float=4, mode: int=0):
     
     N = int(N)
     eta = float(eta)
     sigma_di = float(sigma_di)
     alpha = float(alpha)
+    Penv = float(Penv)
     mode = int(mode)
 
     n = os.getenv('SLURM_CPUS_ON_NODE')
     if n: n = int(n)
-    args = [eta, sigma_di, alpha, mode]
-    map_args = np.array(args*N).reshape(N, 4)
+    args = [eta, sigma_di, alpha, Penv, mode]
+    map_args = np.array(args*N).reshape(N, 5)
 
     rc = await ipp.Cluster().start_and_connect(n=n)
     view = rc.load_balanced_view()
@@ -48,17 +49,21 @@ async def main(N: int=100_000, eta: float=4.5, sigma_di: float=1,
     except ValueError:
         df = None
     
-    metadata = {'eta': eta, 'alpha': alpha, 'sigma_di': sigma_di, 'N': N, 
+    metadata = {'eta': eta, 'alpha': alpha, 'sigma_di': sigma_di, 
+                'Penv': Penv, 'N': N, 
                 'mode': mode, 'wall time': ar.wall_time, 
                 'speed up': ar.serial_time/ar.wall_time}
 
     dir_name = 'data'
     if not os.path.exists(dir_name): 
         os.makedirs(dir_name)
-    e, d, a, m, i = (str(eta).replace('.', ''), str(sigma_di).replace('.', ''), 
-                     str(alpha).replace('.', ''), str(mode), 0)
-    file = f'{dir_name}/e{e}_d{d}_a{a}_m{m}_{i}.h5'
-    name_len = len(f'{dir_name}/e{e}_d{d}_a{a}_m{m}_')
+    e, d, a, p, m, i = (str(eta).replace('.', ''), 
+                        str(sigma_di).replace('.', ''), 
+                        str(alpha).replace('.', ''),
+                        str(Penv).replace('.', ''), 
+                        str(mode), 0)
+    file = f'{dir_name}/e{e}_d{d}_a{a}_p{p}_m{m}_{i}.h5'
+    name_len = len(f'{dir_name}/e{e}_d{d}_a{a}_p{p}_m{m}_')
     while os.path.exists(file):
         i += 1
         file = file[:name_len]+f'{i}.h5'
@@ -89,16 +94,16 @@ if __name__ == '__main__':
 
     if inp[0] != 'savio': asyncio.run(main(*inp))
     else:
-        inps = [[2,   1,   0.5,    0],
-                [4.5, 1,   0.5,    0],
-                [7,   1,   0.5,    0],
-                [4.5, 0.3, 0.5,    0],
-                [4.5, 3,   0.5,    0],
-                [4.5, 1,   -0.5,   0],
-                [4.5, 1,   0,      0],
-                [4.5, 1,   1,      0],
-                [4.5, 1,   0.5,    1],
-                [4.5, 1,   0.5,    2]]
+        inps = [[2,   1,   0.5,    4.0,   0],
+                [4.5, 1,   0.5,    4.0,   0],
+                [7,   1,   0.5,    4.0,   0],
+                [4.5, 0.3, 0.5,    4.0,   0],
+                [4.5, 3,   0.5,    4.0,   0],
+                [4.5, 1,   -0.5,   4.0,   0],
+                [4.5, 1,   0,      4.0,   0],
+                [4.5, 1,   1,      4.0,   0],
+                [4.5, 1,   0.5,    4.0,   1],
+                [4.5, 1,   0.5,    4.0,   2]]
         N = 100_000
 
         for i in inps: asyncio.run(main(N, *i))
