@@ -343,39 +343,39 @@ windemuth = pd.read_csv('data/windemuth.posteriors', sep=' ', header=1)
 
 files_control = ('data/e45_d10_a05_m3_0.h5', 
                  'data/e45_d10_a05_m1_0.h5',
-                 'data/e45_d10_a05_m0_0.h5')
+                 'data/e45_d10_a05_p40_m0_1.h5')
 hist_titles_control = ('Control Case',
                        'Planets Form\nAfter Decay', 
                        'Planets Form\nBefore Decay')
 
 files_eta = ('data/e20_d10_a05_m0_0.h5', 
-             'data/e45_d10_a05_m0_0.h5',
+             'data/e45_d10_a05_p40_m0_1.h5',
              'data/e70_d10_a05_m0_0.h5')
 hist_titles_eta = (r'$\eta=2.0$', r'$\eta=4.5$', r'$\eta=7.0$')
 
 files_alpha = ('data/e45_d10_a10_m0_0.h5', 
-               'data/e45_d10_a05_m0_0.h5',
+               'data/e45_d10_a05_p40_m0_1.h5',
                'data/e45_d10_a00_m0_0.h5',
                'data/e45_d10_a-05_m0_0.h5')
 hist_titles_alpha = (r'$\alpha=1.0$', r'$\alpha=0.5$', 
                      r'$\alpha=0.0$', r'$\alpha=-0.5$')
 
 files_sigma = ('data/e45_d03_a05_m0_0.h5', 
-              'data/e45_d10_a05_m0_0.h5',
+              'data/e45_d10_a05_p40_m0_1.h5',
               'data/e45_d30_a05_m0_0.h5')
 hist_titles_sigma = (r'$\sigma_m=0.3$', r'$\sigma_m=1.0$', 
                      r'$\sigma_m=3.0$')
 
-files_penv = ('data/e45_d10_a05_m0_0.h5',
-              'data/e45_d10_a05_p50_m0_0.h5',
-              'data/e45_d10_a05_p60_m0_0.h5',
-              # 'data/e45_d10_a05_p80_m0_0.h5',
-              # 'data/e45_d10_a05_p120_m0_0.h5'
+files_penv = ('data/e45_d10_a05_p40_m0_1.h5',
+              'data/e45_d10_a05_p60_m0_1.h5',
+              'data/e45_d10_a05_p80_m0_1.h5',
+            #   'data/e45_d10_a05_p100_m0_0.h5',
+              # 'data/e45_d10_a05_p120_m0_1.h5'
               )
 hist_titles_penv = (r'$(P_{\rm env}, P_{\rm min})=(4.0, 3.0)$ days',
-                    r'$(P_{\rm env}, P_{\rm min})=(5.0, 3.75)$ days',
                     r'$(P_{\rm env}, P_{\rm min})=(6.0, 4.5)$ days',
-                    # r'$(P_{\rm env}, P_{\rm min})=(8.0, 6.0)$ days', 
+                    r'$(P_{\rm env}, P_{\rm min})=(8.0, 6.0)$ days',
+                    # r'$(P_{\rm env}, P_{\rm min})=(10.0, 7.5)$ days', 
                     # r'$(P_{\rm env}, P_{\rm min})=(12.0, 9.0)$ days'
                     )
 

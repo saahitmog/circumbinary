@@ -210,7 +210,7 @@ def sample_check(eta, sigma_di, alpha, Penv, mode):
     M_A, M_B, M_p = 1, q, 0
     R_A, R_B, R_p = R_sun, R_sun*q**0.8, 0
 
-    P_min, P_max = Penv*4/3, 200
+    P_min, P_max = Penv*3/4, 200
     l = rng.triangular(0, 1, 1)
     P_b = P_max**l*P_min**(1-l)
     e_b = rng.beta(1.75, 2.01)
