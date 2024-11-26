@@ -423,8 +423,10 @@ observations = {'Kepler 16b' : {'M_A': 0.69,"M_B": 0.2,'a_b': 0.22,
                                   'ecosw': abs(0.112*np.cos(np.deg2rad(36.4)))},
                 'TOI 1338' : {'M_A': 1.127,"M_B": 0.3128,'a_b': 0.1321,
                               'a_p': 0.4491,'e_b': 0.156, 'outlier': 0,
-                              'ecosw': abs(0.1560*np.cos(np.deg2rad(117.568)))}
-                }
+                              'ecosw': abs(0.1560*np.cos(np.deg2rad(117.568)))},
+                'TIC 172900988b' : {'M_A': 1.24,"M_B": 1.20,'a_b':  0.1919,
+                              'a_p': 0.9028,'e_b': 0.448, 'outlier': 0,
+                              'ecosw': abs(0.448*np.cos(np.deg2rad(69.605)))}}
 
 observations_df = pd.DataFrame({'name': observations.keys()})
 for key in observations['Kepler 16b']:
