@@ -70,7 +70,7 @@ def consecutive_masked_runs(arr, mask):
                     if mask[transitions[i]]]
     return masked_runs
 
-def tidal_circ(t, orb, mu, eta, Penv):
+def tidal_circ(t, orb, mu, eta, Penv=4):
     def fN(e):
         return (1+15/2*e**2+45/8*e**4+5/16*e**6)/(1-e**2)**6
     def fOmega(e):
