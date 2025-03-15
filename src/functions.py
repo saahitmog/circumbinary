@@ -265,13 +265,15 @@ def sample_check(eta, sigma_di, alpha, Penv, mode):
     a_p = p2a(P_p, M_A+M_B)
     e_p = 0
 
-    i_b = np.pi/2 + np.arcsin(rng.uniform(0, 0.5))
+    if mode == 3:
+        i_b = windemuth['inc(rad)'][idx]
+    else:
+        i_b = np.pi/2 + np.arcsin(rng.uniform(0, 0.5))
     omega_b = rng.uniform(0, 2*np.pi)
     Omega_b = rng.uniform(0, 2*np.pi)
     omega_p = rng.uniform(0, 2*np.pi)
     Omega_p = rng.uniform(0, 2*np.pi)
     i_m = rng.rayleigh(np.deg2rad(sigma_di))
-    # if mode == 4: i_m = rng.uniform(0, np.deg2rad(15))
     i_p = i_b+i_m
     i_p_sky, Omega_p_sky, omega_p_sky = sky_transform(i_b, Omega_b, omega_b,
                                                       i_m, Omega_p, omega_p)

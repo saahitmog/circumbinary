@@ -12,9 +12,9 @@ parent_dir = os.path.join(current_dir, '..')
 sys.path.insert(0, os.path.abspath(parent_dir))
 from src.functions import p2a, a2p, R_sun, HW99, tidal_circ
 
-color_A = '#005AB5'
-color_B = '#DC3220'
-color_C = '#FFB000'
+color_A = '#bb5566' #'#005AB5'
+color_B = '#0072B2' #'#004488' #'#DC3220'
+color_C = '#ddaa33' #'#FFB000'
 
 data_dir = '../data'
 
@@ -174,7 +174,8 @@ def add_arrow(line, position=None, direction='right', size=14, color=None):
 
 windemuth = pd.read_csv(f'{data_dir}/windemuth.posteriors', sep=' ', header=1)
 
-files_control = (f'{data_dir}/e45_d10_a05_m3_0.h5', 
+files_control = (#f'{data_dir}/e45_d10_a05_m3_0.h5',
+                 f'{data_dir}/e45_d10_a05_p40_m3_1.h5', 
                  f'{data_dir}/e45_d10_a05_m1_0.h5',
                  f'{data_dir}/e45_d10_a05_p40_m0_1.h5')
 hist_titles_control = ('Control Case',
@@ -271,23 +272,23 @@ obs_P_b = [info['P_b'] for _, info in observations.items()]
 obs_P_p = [info['P_p'] for _, info in observations.items()]
 
 all_systems = observations_df.copy()
-p_ratio_obs = []
-for i, planet in all_systems.iterrows():
-    mu = planet['M_B']/(planet['M_B']+planet['M_B'])
-    a_HW = HW99(mu, planet['e_b'], planet['a_b'])
-    P_HW = a2p(a_HW, planet['M_A']+planet['M_B'])
-    P_p = a2p(planet['a_p'], planet['M_A']+planet['M_B'])
-    p_ratio_obs = np.append(p_ratio_obs, P_p/P_HW)
-p_ratio_obs_all = np.sort(p_ratio_obs)
+# p_ratio_obs = []
+# for i, planet in all_systems.iterrows():
+#     mu = planet['M_B']/(planet['M_B']+planet['M_B'])
+#     a_HW = HW99(mu, planet['e_b'], planet['a_b'])
+#     P_HW = a2p(a_HW, planet['M_A']+planet['M_B'])
+#     P_p = a2p(planet['a_p'], planet['M_A']+planet['M_B'])
+#     p_ratio_obs = np.append(p_ratio_obs, P_p/P_HW)
+# p_ratio_obs_all = np.sort(p_ratio_obs)
 
-no_outlier_systems = observations_df[observations_df['outlier'] == 0]
-p_ratio_obs = []
-for i, planet in no_outlier_systems.iterrows():
-    mu = planet['M_B']/(planet['M_B']+planet['M_B'])
-    a_HW = HW99(mu, planet['e_b'], planet['a_b'])
-    P_HW = a2p(a_HW, planet['M_A']+planet['M_B'])
-    P_p = a2p(planet['a_p'], planet['M_A']+planet['M_B'])
-    p_ratio_obs = np.append(p_ratio_obs, P_p/P_HW)
-p_ratio_obs_no_outliers = np.sort(p_ratio_obs)
+# no_outlier_systems = observations_df[observations_df['outlier'] == 0]
+# p_ratio_obs = []
+# for i, planet in no_outlier_systems.iterrows():
+#     mu = planet['M_B']/(planet['M_B']+planet['M_B'])
+#     a_HW = HW99(mu, planet['e_b'], planet['a_b'])
+#     P_HW = a2p(a_HW, planet['M_A']+planet['M_B'])
+#     P_p = a2p(planet['a_p'], planet['M_A']+planet['M_B'])
+#     p_ratio_obs = np.append(p_ratio_obs, P_p/P_HW)
+# p_ratio_obs_no_outliers = np.sort(p_ratio_obs)
 
 sys.path = original_sys_path
