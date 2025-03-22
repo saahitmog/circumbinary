@@ -5,6 +5,7 @@ import pandas as pd
 from rebound import Simulation
 from multiprocessing.pool import Pool
 from scipy.integrate import solve_ivp
+from scipy.stats import norm
 
 original_sys_path = sys.path.copy()
 current_dir = os.path.dirname(__file__)
@@ -12,9 +13,10 @@ parent_dir = os.path.join(current_dir, '..')
 sys.path.insert(0, os.path.abspath(parent_dir))
 from src.functions import p2a, a2p, R_sun, HW99, tidal_circ
 
-color_A = '#bb5566' #'#005AB5'
-color_B = '#0072B2' #'#004488' #'#DC3220'
-color_C = '#ddaa33' #'#FFB000'
+color_A = '#1170AA' #'#bb5566' #'#005AB5'
+color_B = '#FC7D0B' #'#0072B2' #'#004488' #'#DC3220'
+color_C = '#DDAA33' #'#FFB000' #'#878787'
+color_D = '#57606C'
 
 data_dir = '../data'
 
@@ -145,6 +147,17 @@ def ecosw_err(e, w, e_err, w_err):
     x1 = e_err * np.cos(np.deg2rad(w))
     x2 = np.deg2rad(w_err) * e*np.sin(np.deg2rad(w))
     return np.hypot(x1, x2)
+
+def lognormal_cdf(x, mu=0, sigma=1):
+    return norm.cdf((np.log(x)-mu)/sigma)
+
+def lognormal_median(mu, sigma):
+    return np.exp(mu)
+
+def get_cdf(data):
+    x = np.sort(data)
+    y = np.arange(1, len(x)+1) / len(x)
+    return x, y
 
 def add_arrow(line, position=None, direction='right', size=14, color=None):
     if color is None:
