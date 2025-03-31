@@ -154,9 +154,12 @@ def lognormal_cdf(x, mu=0, sigma=1):
 def lognormal_median(mu, sigma):
     return np.exp(mu)
 
-def get_cdf(data):
+def get_cdf(data, pad_values=None):
     x = np.sort(data)
     y = np.arange(1, len(x)+1) / len(x)
+    if pad_values:
+        x = np.pad(x, 1, constant_values=pad_values)
+        y = np.pad(y, 1, constant_values=(0, 1))
     return x, y
 
 def add_arrow(line, position=None, direction='right', size=14, color=None):
