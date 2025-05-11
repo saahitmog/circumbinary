@@ -4,4 +4,6 @@ notes.ipynb
 src/data
 run.sh
 run_large_model_local.sh
+figs/plots.ipynb
+figs/talk/
 # */windemuth.posteriors
